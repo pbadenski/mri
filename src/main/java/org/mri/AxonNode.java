@@ -36,4 +36,49 @@ public class AxonNode {
         }
     }
 
+    public void printPlantUML(PrintStream printStream) {
+        printStream.println("@startuml");
+        printPlantUMLComponent(printStream);
+        printStream.println("@enduml");
+    }
+
+    private void printPlantUMLComponent(PrintStream printStream) {
+        for (AxonNode child : children) {
+            printStream.println(
+                    this.reference().getDeclaringType().getSimpleName()
+                            + " "
+                            + transition(child)
+                            + " "
+                            + child.reference().getDeclaringType().getSimpleName()
+                            + ": "
+                            + methodName(child));
+            child.printPlantUMLComponent(printStream);
+        }
+    }
+
+    private String transition(AxonNode child) {
+        switch (type) {
+            case "controller":
+            case "command handler":
+            case "event listener":
+                return "->";
+            case "command":
+            case "event":
+                return "-->";
+        }
+        return "->";
+    }
+
+    private String methodName(AxonNode child) {
+        switch (type) {
+            case "controller":
+            case "command handler":
+            case "event listener":
+                return "create";
+            case "command":
+            case "event":
+                return child.reference.getSimpleName();
+        }
+        return "<<call>>";
+    }
 }

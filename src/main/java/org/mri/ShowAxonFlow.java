@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class ShowAxonFlow {
+    enum Format {
+        DEFAULT, PLANT_UML;
+    }
     public static final String AXON_EVENT_HANDLER = "@org.axonframework.eventhandling.annotation.EventHandler";
     public static final String AXON_COMMAND_HANDLER = "@org.axonframework.commandhandling.annotation.CommandHandler";
 
@@ -49,6 +52,10 @@ public class ShowAxonFlow {
             forbids = "--classpath")
     private File classpathFile;
     private PrintStream printStream;
+
+    @Option(name="-f", aliases = "--format", metaVar = "FORMAT",
+            usage="format of the output")
+    private Format format = Format.DEFAULT;
 
     public static void main(String[] args) throws Exception {
         ShowAxonFlow.parse(args).doMain();
@@ -124,7 +131,14 @@ public class ShowAxonFlow {
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers);
         List<AxonNode> axonNodes = axonFlowBuilder.buildFlow(methodReferences);
         for (AxonNode axonNode : axonNodes) {
-            axonNode.print(printStream);
+            switch (format) {
+                case PLANT_UML:
+                    axonNode.printPlantUML(printStream);
+                    break;
+                default:
+                    axonNode.print(printStream);
+                    break;
+            }
         }
     }
 

@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class AxonFlowBuilder {
-    private Map<CtTypeReference, Set<CtTypeReference>> classHierarchy;
-    private final Map<CtExecutableReference, List<CtExecutableReference>> callList;
     private final Map<CtTypeReference, List<CtMethodImpl>> eventHandlers;
     private final Map<CtTypeReference, CtMethodImpl> commandHandlers;
     private final MethodCallHierarchyBuilder callHierarchyBuilder;
@@ -23,8 +21,6 @@ public class AxonFlowBuilder {
                            Map<CtExecutableReference, List<CtExecutableReference>> callList,
                            Map<CtTypeReference, List<CtMethodImpl>> eventHandlers,
                            Map<CtTypeReference, CtMethodImpl> commandHandlers) {
-        this.classHierarchy = classHierarchy;
-        this.callList = callList;
         this.eventHandlers = eventHandlers;
         this.commandHandlers = commandHandlers;
         this.callHierarchyBuilder = new MethodCallHierarchyBuilder(callList, classHierarchy);

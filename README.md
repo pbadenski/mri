@@ -30,6 +30,7 @@ Usage
     
 		--classpath-file CLASSPATH_FILE     : file containing the classpath for the analyzed project
 		-c (--classpath) CLASSPATH          : classpath for the analyzed project
+    -f (--format) [DEFAULT | PLANT_UML] : format of the output
 		-m (--method-name) METHOD_NAME      : method name (can be a regexp) to print axon flow for
 		-s (--source-folder) SOURCE_FOLDERS : source folder(s) for the analyzed project
     
@@ -57,3 +58,26 @@ Output:
                   -> org.axonframework.samples.trader.query.users.UserListener.handleUserCreated(org.axonframework.samples.trader.api.users.UserCreatedEvent)
 
                   -> org.axonframework.samples.trader.users.command.User.onUserCreated(org.axonframework.samples.trader.api.users.UserCreatedEvent)
+
+Plant UML support
+-------
+
+Use '-f (-format)' option to visualize your flow using sequence diagram in Plant UML format.
+
+Example:
+
+	@startuml
+	BaseDBInit -> CreateUserCommand: create
+	CreateUserCommand --> UserCommandHandler: handleCreateUser
+	UserCommandHandler -> UserCreatedEvent: create
+	UserCreatedEvent --> PortfolioManagementUserListener: createNewPortfolioWhenUserIsCreated
+	PortfolioManagementUserListener -> CreatePortfolioCommand: create
+	CreatePortfolioCommand --> PortfolioCommandHandler: handleCreatePortfolio
+	PortfolioCommandHandler -> PortfolioCreatedEvent: create
+	PortfolioCreatedEvent --> Portfolio: onPortfolioCreated
+	PortfolioCreatedEvent --> PortfolioMoneyEventListener: handleEvent
+	UserCreatedEvent --> UserListener: handleUserCreated
+	UserCreatedEvent --> User: onUserCreated
+	@enduml
+	
+![Example Axon flow as Plant UML sequence diagram](example-puml.png)
