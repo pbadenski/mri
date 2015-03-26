@@ -116,17 +116,17 @@ public class ShowAxonFlow {
         final Map<CtTypeReference, CtMethodImpl> commandHandlers =
                 new AnnotatedCommandHandlers(AXON_COMMAND_HANDLER).executeSpoon(queueProcessingManager);
 
-        List<MethodCallHierarchyBuilder> methodCallHierarchyBuilders = MethodCallHierarchyBuilder.forMethodName(methodName, callList, classHierarchy);
-        if (methodCallHierarchyBuilders.isEmpty()) {
+        ArrayList<CtExecutableReference> methodReferences = MethodCallHierarchyBuilder.forMethodName(methodName, callList, classHierarchy);
+        if (methodReferences.isEmpty()) {
             printStream.println("No method containing `" + methodName + "` found.");
         }
-        if (methodCallHierarchyBuilders.size() > 1) {
-            printStream.println("Found " + methodCallHierarchyBuilders.size() + " matching methods...");
+        if (methodReferences.size() > 1) {
+            printStream.println("Found " + methodReferences.size() + " matching methods...");
             printStream.println();
         }
-        for (MethodCallHierarchyBuilder each : methodCallHierarchyBuilders) {
-            MethodCall methodCall = each.buildCallHierarchy();
-            System.out.println(methodCall.reference().toString());
+        MethodCallHierarchyBuilder callHierarchyBuilder = new MethodCallHierarchyBuilder(callList, classHierarchy);
+        for (CtExecutableReference each : methodReferences) {
+            MethodCall methodCall = callHierarchyBuilder.buildCallHierarchy(each);
             CtMethodImpl commandHandler = forCommandCaller(commandHandlers, methodCall, "\t");
             forEvent(classHierarchy, callList, eventHandlers, commandHandler, commandHandlers, "\t\t");
         }
@@ -150,8 +150,8 @@ public class ShowAxonFlow {
     }
 
     private List<CtMethodImpl> forEvent(Map<CtTypeReference, Set<CtTypeReference>> classHierarchy, Map<CtExecutableReference, List<CtExecutableReference>> callList, final Map<CtTypeReference, List<CtMethodImpl>> allEventHandlers, CtMethodImpl commandHandler, Map<CtTypeReference, CtMethodImpl> commandHandlers, String indent) {
-        MethodCallHierarchyBuilder commandHandlerCall = new MethodCallHierarchyBuilder(commandHandler.getReference(), callList, classHierarchy);
-        MethodCall secondMethodCall = commandHandlerCall.buildCallHierarchy();
+        MethodCallHierarchyBuilder commandHandlerCall = new MethodCallHierarchyBuilder(callList, classHierarchy);
+        MethodCall secondMethodCall = commandHandlerCall.buildCallHierarchy(commandHandler.getReference());
 
         Iterable<MethodCall> eventConstructionInstances = Iterables.filter(secondMethodCall.asList(), new Predicate<MethodCall>() {
             @Override
@@ -166,9 +166,10 @@ public class ShowAxonFlow {
             for (CtMethodImpl eventHandler : allEventHandlers.get(eventConstruction.reference().getDeclaringType())) {
                 System.out.println(indent + "  -> " + eventHandler.getReference().toString());
                 eventHandlers.add(eventHandler);
+                final MethodCallHierarchyBuilder methodCallHierarchyBuilder = new MethodCallHierarchyBuilder(callList, classHierarchy);
                 forCommandCaller(
                         commandHandlers,
-                        new MethodCallHierarchyBuilder(eventHandler.getReference(), callList, classHierarchy).buildCallHierarchy(), "\t\t\t");
+                        methodCallHierarchyBuilder.buildCallHierarchy(eventHandler.getReference()), "\t\t\t");
                 System.out.println();
             }
         }

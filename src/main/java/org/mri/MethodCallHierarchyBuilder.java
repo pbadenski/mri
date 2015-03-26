@@ -6,24 +6,21 @@ import spoon.reflect.reference.CtTypeReference;
 import java.util.*;
 
 public class MethodCallHierarchyBuilder {
-    private final CtExecutableReference executableReference;
     private final Map<CtExecutableReference, List<CtExecutableReference>> callList;
     private final Map<CtTypeReference, Set<CtTypeReference>> classHierarchy;
 
-    public MethodCallHierarchyBuilder(CtExecutableReference executableReference,
-                                       Map<CtExecutableReference, List<CtExecutableReference>> callList,
-                                       Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
-        this.executableReference = executableReference;
+    public MethodCallHierarchyBuilder(Map<CtExecutableReference, List<CtExecutableReference>> callList,
+                                      Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
         this.callList = callList;
         this.classHierarchy = classHierarchy;
     }
 
-    public static List<MethodCallHierarchyBuilder> forMethodName(String methodName,
-                                                           Map<CtExecutableReference, List<CtExecutableReference>> callList,
-                                                           Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
-        ArrayList<MethodCallHierarchyBuilder> result = new ArrayList<>();
+    public static ArrayList<CtExecutableReference> forMethodName(String methodName,
+                                                                 Map<CtExecutableReference, List<CtExecutableReference>> callList,
+                                                                 Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
+        ArrayList<CtExecutableReference > result = new ArrayList<>();
         for (CtExecutableReference executableReference : findExecutablesForMethodName(methodName, callList)) {
-            result.add(new MethodCallHierarchyBuilder(executableReference, callList, classHierarchy));
+            result.add(executableReference);
         }
         return result;
     }
@@ -41,9 +38,9 @@ public class MethodCallHierarchyBuilder {
         return result;
     }
 
-    public MethodCall buildCallHierarchy() {
-        MethodCall methodCall = new MethodCall(executableReference);
-        buildCallHierarchy(executableReference, new HashSet<CtExecutableReference>(), methodCall);
+    public MethodCall buildCallHierarchy(CtExecutableReference executableReference1) {
+        MethodCall methodCall = new MethodCall(executableReference1);
+        buildCallHierarchy(executableReference1, new HashSet<CtExecutableReference>(), methodCall);
         return methodCall;
     }
 
