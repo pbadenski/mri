@@ -1,4 +1,4 @@
-MRI (pronounced ehm-are-eye) helps to visualize flow of the code when using Axon Framework.
+MRI /ˌɛm ɑr ˈaɪ/ helps to visualize flow of the code when using Axon Framework.
 
 Installation
 ------------
@@ -12,7 +12,7 @@ Usage
 
 	For Maven run:
 
-		mvn dependency:build-classpath | grep -v "^\[.*\].*" > this.classpath
+		$ mvn dependency:build-classpath | grep -v "^\[.*\].*" | tr '\n' ':' > this.classpath
 
 	For Gradle add this to build.gradle:
 
@@ -22,7 +22,7 @@ Usage
 
 	and run
 
- 		gradle -q showClasspath > this.classpath
+		$ gradle -q showClasspath > this.classpath
 
 2. To print the Axon flow:
 
@@ -30,7 +30,7 @@ Usage
     
 		--classpath-file CLASSPATH_FILE     : file containing the classpath for the analyzed project
 		-c (--classpath) CLASSPATH          : classpath for the analyzed project
-    -f (--format) [DEFAULT | PLANT_UML] : format of the output
+        -f (--format) [DEFAULT | PLANTUML] : format of the output
 		-m (--method-name) METHOD_NAME      : method name (can be a regexp) to print axon flow for
 		-s (--source-folder) SOURCE_FOLDERS : source folder(s) for the analyzed project
     
@@ -39,8 +39,9 @@ Example
 
 Execute following from this project root directory:
 
-	$ gradle -q showClasspath > this.classpath
-	$ java -jar build/libs//org.mri-*.jar -s src/main/java -m org.mri.ShowAxonFlow.main --classpath-file this.classpath
+	$ git clone https://github.com/AxonFramework/Axon-trader ../Axon-trader
+	$ mvn -f ../Axon-trader/pom.xml dependency:build-classpath | grep -v "^\[.*\].*" | tr '\n' ':' > ../Axon-trader/this.classpath
+	$ java -jar build/libs/org.mri-*.jar --classpath-file "../Axon-trader/this.classpath" -s ../Axon-trader -m createuser
 
 Output:
 
@@ -64,7 +65,11 @@ Plant UML support
 
 Use '-f (-format)' option to visualize your flow using sequence diagram in Plant UML format.
 
-Example:
+Run:
+
+	$ java -jar build/libs/org.mri-*.jar --classpath-file "../Axon-trader/this.classpath" -s ../Axon-trader/ -m createuser -f plantuml
+
+Text Output:
 
 	@startuml
 	BaseDBInit -> CreateUserCommand: create
@@ -80,4 +85,10 @@ Example:
 	UserCreatedEvent --> User: onUserCreated
 	@enduml
 	
+Run (requires plantuml as shell command):
+
+	$ java -jar build/libs/org.mri-*.jar --classpath-file "../Axon-trader/this.classpath" -s ../Axon-trader/ -m createuser -f plantuml | plantuml -tpng -pipe > output.png
+
+Image output:
+
 ![Example Axon flow as Plant UML sequence diagram](example-puml.png)

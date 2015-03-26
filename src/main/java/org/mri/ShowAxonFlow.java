@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class ShowAxonFlow {
     enum Format {
-        DEFAULT, PLANT_UML;
+        DEFAULT, PLANTUML;
     }
     public static final String AXON_EVENT_HANDLER = "@org.axonframework.eventhandling.annotation.EventHandler";
     public static final String AXON_COMMAND_HANDLER = "@org.axonframework.commandhandling.annotation.CommandHandler";
@@ -132,7 +132,7 @@ public class ShowAxonFlow {
         List<AxonNode> axonNodes = axonFlowBuilder.buildFlow(methodReferences);
         for (AxonNode axonNode : axonNodes) {
             switch (format) {
-                case PLANT_UML:
+                case PLANTUML:
                     axonNode.printPlantUML(printStream);
                     break;
                 default:
