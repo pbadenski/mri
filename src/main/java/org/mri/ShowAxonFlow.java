@@ -122,7 +122,10 @@ public class ShowAxonFlow {
             printStream.println();
         }
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers);
-        axonFlowBuilder.buildFlow(methodReferences);
+        List<AxonNode> axonNodes = axonFlowBuilder.buildFlow(methodReferences);
+        for (AxonNode axonNode : axonNodes) {
+            axonNode.print(printStream);
+        }
     }
 
 }
