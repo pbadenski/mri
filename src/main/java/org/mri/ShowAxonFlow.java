@@ -1,8 +1,5 @@
 package org.mri;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.args4j.CmdLineException;
@@ -124,55 +121,8 @@ public class ShowAxonFlow {
             printStream.println("Found " + methodReferences.size() + " matching methods...");
             printStream.println();
         }
-        MethodCallHierarchyBuilder callHierarchyBuilder = new MethodCallHierarchyBuilder(callList, classHierarchy);
-        for (CtExecutableReference each : methodReferences) {
-            MethodCall methodCall = callHierarchyBuilder.buildCallHierarchy(each);
-            CtMethodImpl commandHandler = forCommandCaller(commandHandlers, methodCall, "\t");
-            forEvent(classHierarchy, callList, eventHandlers, commandHandler, commandHandlers, "\t\t");
-        }
+        AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers);
+        axonFlowBuilder.buildFlow(methodReferences);
     }
 
-    private CtMethodImpl forCommandCaller(final Map<CtTypeReference, CtMethodImpl> allCommandHandlers, MethodCall each, String indent) {
-        Optional<MethodCall> commandConstruction = Iterables.tryFind(each.asList(), new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(MethodCall input) {
-                return allCommandHandlers.keySet().contains(input.reference().getDeclaringType());
-            }
-        });
-        if (!commandConstruction.isPresent()) {
-            return null;
-        }
-        CtMethodImpl commandHandler = allCommandHandlers.get(commandConstruction.get().reference().getDeclaringType());
-        System.out.println(indent + "-> " + commandConstruction.get().reference().toString());
-        System.out.println(indent + "-- [handler] --");
-        System.out.println(indent + "  -> " + commandHandler.getReference().toString());
-        return commandHandler;
-    }
-
-    private List<CtMethodImpl> forEvent(Map<CtTypeReference, Set<CtTypeReference>> classHierarchy, Map<CtExecutableReference, List<CtExecutableReference>> callList, final Map<CtTypeReference, List<CtMethodImpl>> allEventHandlers, CtMethodImpl commandHandler, Map<CtTypeReference, CtMethodImpl> commandHandlers, String indent) {
-        MethodCallHierarchyBuilder commandHandlerCall = new MethodCallHierarchyBuilder(callList, classHierarchy);
-        MethodCall secondMethodCall = commandHandlerCall.buildCallHierarchy(commandHandler.getReference());
-
-        Iterable<MethodCall> eventConstructionInstances = Iterables.filter(secondMethodCall.asList(), new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(MethodCall input) {
-                return allEventHandlers.keySet().contains(input.reference().getDeclaringType());
-            }
-        });
-        List<CtMethodImpl> eventHandlers = new ArrayList<>();
-        for (MethodCall eventConstruction : eventConstructionInstances) {
-            System.out.println(indent + "-> " + eventConstruction.reference().toString());
-            System.out.println(indent + "-- [listeners] --");
-            for (CtMethodImpl eventHandler : allEventHandlers.get(eventConstruction.reference().getDeclaringType())) {
-                System.out.println(indent + "  -> " + eventHandler.getReference().toString());
-                eventHandlers.add(eventHandler);
-                final MethodCallHierarchyBuilder methodCallHierarchyBuilder = new MethodCallHierarchyBuilder(callList, classHierarchy);
-                forCommandCaller(
-                        commandHandlers,
-                        methodCallHierarchyBuilder.buildCallHierarchy(eventHandler.getReference()), "\t\t\t");
-                System.out.println();
-            }
-        }
-        return eventHandlers;
-    }
 }
