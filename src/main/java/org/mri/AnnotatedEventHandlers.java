@@ -11,24 +11,21 @@ import spoon.support.QueueProcessingManager;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AnnotatedEventHandlers extends AbstractProcessor<CtMethodImpl> {
-    private final String annotation;
+    private final List<String> annotations;
     private Map<CtTypeReference, List<CtMethodImpl>> methodMap = new HashMap<>();
 
-    public AnnotatedEventHandlers(String annotation) {
-        this.annotation = annotation;
+    public AnnotatedEventHandlers(String... annotations) {
+        this.annotations = Arrays.asList(annotations);
     }
 
     @Override
     public void process(CtMethodImpl method) {
         Optional<CtAnnotation<? extends Annotation>> annotation = Iterables.tryFind(
                 method.getAnnotations(),
-                signatureEqualTo(this.annotation));
+                signatureContainsOneOf(this.annotations));
         if (annotation.isPresent()) {
             CtTypeReference parameterType = ((CtParameter) method.getParameters().get(0)).getType();
             List<CtMethodImpl> methods = methodMap.get(parameterType);
@@ -40,11 +37,11 @@ public class AnnotatedEventHandlers extends AbstractProcessor<CtMethodImpl> {
         }
     }
 
-    private Predicate<CtAnnotation> signatureEqualTo(final String value) {
+    private Predicate<CtAnnotation> signatureContainsOneOf(final List<String> list) {
         return new Predicate<CtAnnotation>() {
             @Override
             public boolean apply(CtAnnotation annotation) {
-                return annotation.getSignature().equals(value);
+                return list.contains(annotation.getSignature());
             }
         };
     }

@@ -29,6 +29,8 @@ public class ShowAxonFlow {
         DEFAULT, PLANTUML;
     }
     public static final String AXON_EVENT_HANDLER = "@org.axonframework.eventhandling.annotation.EventHandler";
+    public static final String AXON_EVENT_SOURCING_HANDLER = "@org.axonframework.eventsourcing.annotation.EventSourcingHandler";
+    public static final String AXON_SAGA_HANDLER = "@org.axonframework.saga.annotation.SagaEventHandler";
     public static final String AXON_COMMAND_HANDLER = "@org.axonframework.commandhandling.annotation.CommandHandler";
 
     private static Logger logger = LoggerFactory.getLogger(ShowAxonFlow.class);
@@ -116,7 +118,8 @@ public class ShowAxonFlow {
         Map<CtExecutableReference, List<CtExecutableReference>> callList =
                 new MethodExecutionProcessor().executeSpoon(queueProcessingManager);
         final Map<CtTypeReference, List<CtMethodImpl>> eventHandlers =
-                new AnnotatedEventHandlers(AXON_EVENT_HANDLER).executeSpoon(queueProcessingManager);
+                new AnnotatedEventHandlers(AXON_EVENT_HANDLER, AXON_EVENT_SOURCING_HANDLER, AXON_SAGA_HANDLER)
+                        .executeSpoon(queueProcessingManager);
         final Map<CtTypeReference, CtMethodImpl> commandHandlers =
                 new AnnotatedCommandHandlers(AXON_COMMAND_HANDLER).executeSpoon(queueProcessingManager);
 
