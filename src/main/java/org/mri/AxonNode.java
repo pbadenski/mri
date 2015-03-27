@@ -45,15 +45,21 @@ public class AxonNode {
     private void printPlantUMLComponent(PrintStream printStream) {
         for (AxonNode child : children) {
             printStream.println(
-                    this.reference().getDeclaringType().getSimpleName()
+                    "\"" + actorName(this.reference()) + "\""
                             + " "
                             + transition(child)
                             + " "
-                            + child.reference().getDeclaringType().getSimpleName()
+                            + "\"" + actorName(child.reference()) + "\""
                             + ": "
                             + methodName(child));
             child.printPlantUMLComponent(printStream);
         }
+    }
+
+    private String actorName(CtExecutableReference reference) {
+        return
+                reference.getDeclaringType().getSimpleName()
+                        + "#" + reference.getSimpleName();
     }
 
     private String transition(AxonNode child) {
