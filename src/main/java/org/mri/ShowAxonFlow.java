@@ -2,10 +2,7 @@ package org.mri;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.OptionHandlerFilter;
+import org.kohsuke.args4j.*;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,13 +56,17 @@ public class ShowAxonFlow {
             usage="format of the output")
     private Format format = Format.DEFAULT;
 
+    @Option(name = "--match-events-by-name", metaVar = "MATCH_EVENTS_BY_NAME",
+            usage="match events by class name only instead of a full signature")
+    private boolean matchEventsByName;
+
     public static void main(String[] args) throws Exception {
         ShowAxonFlow.parse(args).doMain();
     }
 
     private static ShowAxonFlow parse(String[] args) {
         ShowAxonFlow showAxonFlow = new ShowAxonFlow(System.out);
-        CmdLineParser parser = new CmdLineParser(showAxonFlow);
+        CmdLineParser parser = new CmdLineParser(showAxonFlow, ParserProperties.defaults().withUsageWidth(120));
         try {
             parser.parseArgument(args);
         } catch (CmdLineException e) {
@@ -131,7 +132,7 @@ public class ShowAxonFlow {
             printStream.println("Found " + methodReferences.size() + " matching methods...");
             printStream.println();
         }
-        AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers);
+        AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers, matchEventsByName);
         List<AxonNode> axonNodes = axonFlowBuilder.buildFlow(methodReferences);
         for (AxonNode axonNode : axonNodes) {
             switch (format) {
