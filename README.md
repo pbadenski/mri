@@ -12,7 +12,7 @@ Usage
 
 	For Maven run:
 
-		$ mvn dependency:build-classpath | grep -v "^\[.*\].*" | tr '\n' ':' > this.classpath
+		$ mvn dependency:build-classpath | grep -v "^\[.*\].*" | tr ':' '\n' | sort | uniq | tr '\n' ':' > this.classpath
 
 	For Gradle add this to build.gradle:
 
