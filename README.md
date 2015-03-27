@@ -1,4 +1,7 @@
-MRI /ˌɛm ɑr ˈaɪ/ helps to visualize flow of the code when using Axon Framework.
+Axon MRI - Flow visualization tool
+==================================
+
+MRI /ˌɛm ɑr ˈaɪ/ helps you visualize flow of the code when using Axon Framework.
 
 Installation
 ------------
@@ -8,7 +11,7 @@ Installation
 Usage
 -----
 
-1. Before running the code you need classpath for the analyzed project.
+1. Before executing this tool you need to have generated the classpath for your project.
 
 	For Maven run:
 
@@ -33,7 +36,7 @@ Usage
         -f (--format) [DEFAULT | PLANTUML] : format of the output
 		-m (--method-name) METHOD_NAME      : method name (can be a regexp) to print axon flow for
 		-s (--source-folder) SOURCE_FOLDERS : source folder(s) for the analyzed project
-    
+		
 Example
 -------
 
