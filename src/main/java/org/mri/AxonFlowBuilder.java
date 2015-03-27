@@ -31,7 +31,7 @@ public class AxonFlowBuilder {
     List<AxonNode> buildFlow(ArrayList<CtExecutableReference> methodReferences) {
         List<AxonNode> nodes = new ArrayList<>();
         for (CtExecutableReference each : methodReferences) {
-            AxonNode root = new AxonNode("controller", each);
+            AxonNode root = new AxonNode(AxonNode.Type.CONTROLLER, each);
             nodes.add(root);
             buildCommandFlow(root);
         }
@@ -45,9 +45,9 @@ public class AxonFlowBuilder {
             return;
         }
         CtMethodImpl commandHandler = commandHandlers.get(commandConstruction.get().reference().getDeclaringType());
-        AxonNode commandConstructionNode = new AxonNode("command", commandConstruction.get().reference());
+        AxonNode commandConstructionNode = new AxonNode(AxonNode.Type.COMMAND, commandConstruction.get().reference());
         node.add(commandConstructionNode);
-        AxonNode commandHandlerNode = new AxonNode("command handler", commandHandler.getReference());
+        AxonNode commandHandlerNode = new AxonNode(AxonNode.Type.COMMAND_HANDLER, commandHandler.getReference());
         commandConstructionNode.add(commandHandlerNode);
         buildEventFlow(commandHandlerNode);
     }
@@ -66,10 +66,10 @@ public class AxonFlowBuilder {
 
         Iterable<MethodCall> eventConstructionInstances = Iterables.filter(methodCall.asList(), isEventPredicate());
         for (MethodCall eventConstruction : eventConstructionInstances) {
-            AxonNode eventNode = new AxonNode("event", eventConstruction.reference());
+            AxonNode eventNode = new AxonNode(AxonNode.Type.EVENT, eventConstruction.reference());
             node.add(eventNode);
             for (CtMethodImpl eventHandler : findEventHandlersFor(eventNode.reference().getDeclaringType())) {
-                AxonNode eventHandlerNode = new AxonNode("event listener", eventHandler.getReference());
+                AxonNode eventHandlerNode = new AxonNode(AxonNode.Type.EVENT_LISTENER, eventHandler.getReference());
                 eventNode.add(eventHandlerNode);
                 buildCommandFlow(eventHandlerNode);
             }

@@ -7,11 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AxonNode {
-    private final String type;
+    enum Type {
+        CONTROLLER, COMMAND, COMMAND_HANDLER, EVENT, EVENT_LISTENER;
+    }
+
+    private final Type type;
     private final CtExecutableReference reference;
     private List<AxonNode> children = new ArrayList<>();
 
-    public AxonNode(String type, CtExecutableReference reference) {
+    public AxonNode(Type type, CtExecutableReference reference) {
         this.type = type;
         this.reference = reference;
     }
@@ -47,7 +51,7 @@ public class AxonNode {
             printStream.println(
                     "\"" + actorName(this.reference()) + "\""
                             + " "
-                            + transition(child)
+                            + transition()
                             + " "
                             + "\"" + actorName(child.reference()) + "\""
                             + ": "
@@ -62,14 +66,14 @@ public class AxonNode {
                         + "#" + reference.getSimpleName();
     }
 
-    private String transition(AxonNode child) {
+    private String transition() {
         switch (type) {
-            case "controller":
-            case "command handler":
-            case "event listener":
+            case CONTROLLER:
+            case COMMAND_HANDLER:
+            case EVENT_LISTENER:
                 return "->";
-            case "command":
-            case "event":
+            case COMMAND:
+            case EVENT:
                 return "-->";
         }
         return "->";
@@ -77,12 +81,12 @@ public class AxonNode {
 
     private String methodName(AxonNode child) {
         switch (type) {
-            case "controller":
-            case "command handler":
-            case "event listener":
+            case CONTROLLER:
+            case COMMAND_HANDLER:
+            case EVENT_LISTENER:
                 return "create";
-            case "command":
-            case "event":
+            case COMMAND:
+            case EVENT:
                 return child.reference.getSimpleName();
         }
         return "<<call>>";
