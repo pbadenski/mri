@@ -6,6 +6,9 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+
 public class AxonNode {
     enum Type {
         CONTROLLER, COMMAND, COMMAND_HANDLER, EVENT, EVENT_LISTENER;
@@ -32,7 +35,7 @@ public class AxonNode {
         if (children.isEmpty()) {
             return;
         }
-        
+
         print(printStream, "");
     }
 
@@ -49,7 +52,7 @@ public class AxonNode {
             return;
         }
 
-        printStream.println("@startuml");
+        printStream.println("@startuml " + LOWER_CAMEL.to(LOWER_HYPHEN, reference.getSimpleName()) + "-flow.png");
         printPlantUMLComponent(printStream);
         printStream.println("@enduml");
     }
