@@ -29,6 +29,10 @@ public class AxonNode {
     }
 
     public void print(PrintStream printStream) {
+        if (children.isEmpty()) {
+            return;
+        }
+        
         print(printStream, "");
     }
 
@@ -41,6 +45,10 @@ public class AxonNode {
     }
 
     public void printPlantUML(PrintStream printStream) {
+        if (children.isEmpty()) {
+            return;
+        }
+
         printStream.println("@startuml");
         printPlantUMLComponent(printStream);
         printStream.println("@enduml");
