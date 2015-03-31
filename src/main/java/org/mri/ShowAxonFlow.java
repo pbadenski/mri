@@ -128,10 +128,6 @@ public class ShowAxonFlow {
         if (methodReferences.isEmpty()) {
             printStream.println("No method containing `" + methodName + "` found.");
         }
-        if (methodReferences.size() > 1) {
-            printStream.println("Found " + methodReferences.size() + " matching methods...");
-            printStream.println();
-        }
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers, matchEventsByName);
         List<AxonNode> axonNodes = axonFlowBuilder.buildFlow(methodReferences);
         for (AxonNode axonNode : axonNodes) {
