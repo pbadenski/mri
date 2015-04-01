@@ -1,6 +1,5 @@
 package org.mri;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -9,9 +8,13 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class AxonFlowBuilder {
+    private final EventHandlerIdentificationStrategy eventHandlerIdentificationStrategy;
     private final Map<CtTypeReference, List<CtMethodImpl>> eventHandlers;
     private final Map<CtTypeReference, CtMethodImpl> commandHandlers;
     private final MethodCallHierarchyBuilder callHierarchyBuilder;
@@ -22,6 +25,12 @@ public class AxonFlowBuilder {
                            Map<CtTypeReference, List<CtMethodImpl>> eventHandlers,
                            Map<CtTypeReference, CtMethodImpl> commandHandlers,
                            boolean matchEventsByName) {
+        if (matchEventsByName) {
+            this.eventHandlerIdentificationStrategy = new EventHandlerIdentificationByNameStrategy(eventHandlers);
+        }
+        else {
+            this.eventHandlerIdentificationStrategy = new EventHandlerIdentificationBySignatureStrategy(eventHandlers);
+        }
         this.eventHandlers = eventHandlers;
         this.commandHandlers = commandHandlers;
         this.matchEventsByName = matchEventsByName;
@@ -64,11 +73,13 @@ public class AxonFlowBuilder {
     private AxonNode buildEventFlow(AxonNode node) {
         MethodCall methodCall = this.callHierarchyBuilder.buildCallHierarchy(node.reference());
 
-        Iterable<MethodCall> eventConstructionInstances = Iterables.filter(methodCall.asList(), isEventPredicate());
+        Iterable<MethodCall> eventConstructionInstances =
+                Iterables.filter(methodCall.asList(), eventHandlerIdentificationStrategy.isEventPredicate());
+        System.out.println(Lists.newArrayList(eventConstructionInstances));
         for (MethodCall eventConstruction : eventConstructionInstances) {
             AxonNode eventNode = new AxonNode(AxonNode.Type.EVENT, eventConstruction.reference());
             node.add(eventNode);
-            for (CtMethodImpl eventHandler : findEventHandlersFor(eventNode.reference().getDeclaringType())) {
+            for (CtMethodImpl eventHandler : eventHandlerIdentificationStrategy.findEventHandlers(eventNode.reference().getDeclaringType())) {
                 AxonNode eventHandlerNode = new AxonNode(AxonNode.Type.EVENT_LISTENER, eventHandler.getReference());
                 eventNode.add(eventHandlerNode);
                 buildCommandFlow(eventHandlerNode);
@@ -76,51 +87,4 @@ public class AxonFlowBuilder {
         }
         return node;
     }
-
-    private List<CtMethodImpl> findEventHandlersFor(CtTypeReference type) {
-        Map<String, List<CtMethodImpl>> eventHandlerByNames = new HashMap<>();
-        for (Map.Entry<CtTypeReference, List<CtMethodImpl>> entry : eventHandlers.entrySet()) {
-            eventHandlerByNames.put(entry.getKey().getSimpleName(), entry.getValue());
-        }
-        if (matchEventsByName) {
-            return eventHandlerByNames.get(type.getSimpleName());
-        } else {
-            return this.eventHandlers.get(type);
-        }
-    }
-
-    private Predicate<MethodCall> isEventPredicate() {
-        if (matchEventsByName){
-            return matchEventsByNamePredicate();
-        } else {
-            return matchEventsBySignaturePredicate();
-        }
-
-    }
-
-    private Predicate<MethodCall> matchEventsBySignaturePredicate() {
-        return new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(final MethodCall input) {
-                return eventHandlers.keySet().contains(input.reference().getDeclaringType());
-            }
-        };
-    }
-
-    private Predicate<MethodCall> matchEventsByNamePredicate() {
-        final List<String> eventHandlerNames =
-                Lists.newArrayList(Iterables.transform(eventHandlers.keySet(), new Function<CtTypeReference, String>() {
-                    @Override
-                    public String apply(CtTypeReference type) {
-                        return type.getSimpleName();
-                    }
-                }));
-        return new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(final MethodCall input) {
-                return eventHandlerNames.contains(input.reference().getDeclaringType().getSimpleName());
-            }
-        };
-    }
-
 }
