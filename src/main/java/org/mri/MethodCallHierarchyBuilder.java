@@ -38,9 +38,9 @@ public class MethodCallHierarchyBuilder {
         return result;
     }
 
-    public MethodCall buildCallHierarchy(CtExecutableReference executableReference1) {
-        MethodCall methodCall = new MethodCall(executableReference1);
-        buildCallHierarchy(executableReference1, new HashSet<CtExecutableReference>(), methodCall);
+    public MethodCall buildCallHierarchy(CtExecutableReference executableReference) {
+        MethodCall methodCall = new MethodCall(executableReference);
+        buildCallHierarchy(executableReference, new HashSet<CtExecutableReference>(), methodCall);
         return methodCall;
     }
 

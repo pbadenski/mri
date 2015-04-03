@@ -14,21 +14,20 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AnnotatedCommandHandlers extends AbstractProcessor<CtMethodImpl> {
-    private final String annotation;
+public class CommandHandlersFinder {
+    private static final String AXON_COMMAND_HANDLER = "@org.axonframework.commandhandling.annotation.CommandHandler";
+
     private Map<CtTypeReference, CtMethodImpl> methods = new HashMap<>();
 
-    public AnnotatedCommandHandlers(String annotation) {
-        this.annotation = annotation;
-    }
-
-    @Override
-    public void process(CtMethodImpl method) {
-        Optional<CtAnnotation<? extends Annotation>> annotation = Iterables.tryFind(
-                method.getAnnotations(),
-                signatureEqualTo(this.annotation));
-        if (annotation.isPresent()) {
-            methods.put(((CtParameter)method.getParameters().get(0)).getType(), method);
+    private class Processor extends AbstractProcessor<CtMethodImpl> {
+        @Override
+        public void process(CtMethodImpl method) {
+            Optional<CtAnnotation<? extends Annotation>> annotation = Iterables.tryFind(
+                    method.getAnnotations(),
+                    signatureEqualTo(AXON_COMMAND_HANDLER));
+            if (annotation.isPresent()) {
+                methods.put(((CtParameter)method.getParameters().get(0)).getType(), method);
+            }
         }
     }
 
@@ -41,8 +40,8 @@ public class AnnotatedCommandHandlers extends AbstractProcessor<CtMethodImpl> {
         };
     }
 
-    public Map<CtTypeReference, CtMethodImpl> executeSpoon(QueueProcessingManager queueProcessingManager) {
-        queueProcessingManager.addProcessor(this);
+    public Map<CtTypeReference, CtMethodImpl> all(QueueProcessingManager queueProcessingManager) {
+        queueProcessingManager.addProcessor(new Processor());
         queueProcessingManager.process();
         return methods;
     }
