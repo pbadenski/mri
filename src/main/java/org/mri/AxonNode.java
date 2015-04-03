@@ -10,8 +10,9 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 
 public class AxonNode {
+
     enum Type {
-        CONTROLLER, COMMAND, COMMAND_HANDLER, EVENT, EVENT_LISTENER;
+        CONTROLLER, COMMAND, COMMAND_HANDLER, EVENT, EVENT_LISTENER, AGGREGATE;
     }
 
     private final Type type;
@@ -25,6 +26,10 @@ public class AxonNode {
 
     public void add(AxonNode node) {
         this.children.add(node);
+    }
+
+    public boolean hasChildren() {
+        return !this.children.isEmpty();
     }
 
     public CtExecutableReference reference() {
@@ -82,6 +87,7 @@ public class AxonNode {
             case CONTROLLER:
             case COMMAND_HANDLER:
             case EVENT_LISTENER:
+            case AGGREGATE:
                 return "->";
             case COMMAND:
             case EVENT:
@@ -98,6 +104,7 @@ public class AxonNode {
                 return "create";
             case COMMAND:
             case EVENT:
+            case AGGREGATE:
                 return child.reference.getSimpleName();
         }
         return "<<call>>";

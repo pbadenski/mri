@@ -3,7 +3,6 @@ package org.mri;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtMethodImpl;
@@ -15,25 +14,23 @@ import java.util.Set;
 
 public class AxonFlowBuilder {
     private final EventHandlerIdentificationStrategy eventHandlerIdentificationStrategy;
-    private final Map<CtTypeReference, List<CtMethodImpl>> eventHandlers;
     private final Map<CtTypeReference, CtMethodImpl> commandHandlers;
     private final MethodCallHierarchyBuilder callHierarchyBuilder;
-    private boolean matchEventsByName;
+    private List<CtTypeReference> aggregates;
 
     public AxonFlowBuilder(Map<CtTypeReference, Set<CtTypeReference>> classHierarchy,
                            Map<CtExecutableReference, List<CtExecutableReference>> callList,
                            Map<CtTypeReference, List<CtMethodImpl>> eventHandlers,
                            Map<CtTypeReference, CtMethodImpl> commandHandlers,
-                           boolean matchEventsByName) {
+                           List<CtTypeReference> aggregates, boolean matchEventsByName) {
+        this.aggregates = aggregates;
         if (matchEventsByName) {
             this.eventHandlerIdentificationStrategy = new EventHandlerIdentificationByNameStrategy(eventHandlers);
         }
         else {
             this.eventHandlerIdentificationStrategy = new EventHandlerIdentificationBySignatureStrategy(eventHandlers);
         }
-        this.eventHandlers = eventHandlers;
         this.commandHandlers = commandHandlers;
-        this.matchEventsByName = matchEventsByName;
         this.callHierarchyBuilder = new MethodCallHierarchyBuilder(callList, classHierarchy);
     }
 
@@ -58,7 +55,7 @@ public class AxonFlowBuilder {
         node.add(commandConstructionNode);
         AxonNode commandHandlerNode = new AxonNode(AxonNode.Type.COMMAND_HANDLER, commandHandler.getReference());
         commandConstructionNode.add(commandHandlerNode);
-        buildEventFlow(commandHandlerNode);
+        buildAggregateFlow(commandHandlerNode);
     }
 
     private Predicate<MethodCall> isCommandPredicate() {
@@ -70,12 +67,34 @@ public class AxonFlowBuilder {
         };
     }
 
+    private void buildAggregateFlow(AxonNode node) {
+        MethodCall methodCall = this.callHierarchyBuilder.buildCallHierarchy(node.reference());
+
+        Iterable<MethodCall> aggregateCallInstances =
+                Iterables.filter(methodCall.asList(), isAggregatePredicate());
+        for (MethodCall aggregateCall : aggregateCallInstances) {
+            AxonNode aggregateNode = new AxonNode(AxonNode.Type.AGGREGATE, aggregateCall.reference());
+            buildEventFlow(aggregateNode);
+            if (aggregateNode.hasChildren()) {
+                node.add(aggregateNode);
+            }
+        }
+    }
+
+    private Predicate<? super MethodCall> isAggregatePredicate() {
+        return new Predicate<MethodCall>() {
+            @Override
+            public boolean apply(MethodCall input) {
+                return aggregates.contains(input.reference().getDeclaringType());
+            }
+        };
+    }
+
     private AxonNode buildEventFlow(AxonNode node) {
         MethodCall methodCall = this.callHierarchyBuilder.buildCallHierarchy(node.reference());
 
         Iterable<MethodCall> eventConstructionInstances =
                 Iterables.filter(methodCall.asList(), eventHandlerIdentificationStrategy.isEventPredicate());
-        System.out.println(Lists.newArrayList(eventConstructionInstances));
         for (MethodCall eventConstruction : eventConstructionInstances) {
             AxonNode eventNode = new AxonNode(AxonNode.Type.EVENT, eventConstruction.reference());
             node.add(eventNode);

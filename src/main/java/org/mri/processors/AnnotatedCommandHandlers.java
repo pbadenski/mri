@@ -1,4 +1,4 @@
-package org.mri;
+package org.mri.processors;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;

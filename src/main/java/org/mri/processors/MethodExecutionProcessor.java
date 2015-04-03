@@ -1,4 +1,4 @@
-package org.mri;
+package org.mri.processors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ public class MethodExecutionProcessor extends AbstractProcessor<CtExecutableImpl
     }
 
 
-    Map<CtExecutableReference, List<CtExecutableReference>> executeSpoon(QueueProcessingManager queueProcessingManager) throws Exception {
+    public Map<CtExecutableReference, List<CtExecutableReference>> executeSpoon(QueueProcessingManager queueProcessingManager) throws Exception {
         queueProcessingManager.addProcessor(this);
         queueProcessingManager.process();
         logger.debug("Method calls: " + callList);

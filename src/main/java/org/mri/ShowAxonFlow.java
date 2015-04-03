@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.args4j.*;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
+import org.mri.processors.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -123,12 +124,13 @@ public class ShowAxonFlow {
                         .executeSpoon(queueProcessingManager);
         final Map<CtTypeReference, CtMethodImpl> commandHandlers =
                 new AnnotatedCommandHandlers(AXON_COMMAND_HANDLER).executeSpoon(queueProcessingManager);
+        List<CtTypeReference> aggregates = new AggregatesFinder().all(queueProcessingManager);
 
         ArrayList<CtExecutableReference> methodReferences = MethodCallHierarchyBuilder.forMethodName(methodName, callList, classHierarchy);
         if (methodReferences.isEmpty()) {
             printStream.println("No method containing `" + methodName + "` found.");
         }
-        AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers, matchEventsByName);
+        AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers, aggregates, matchEventsByName);
         List<AxonNode> axonNodes = axonFlowBuilder.buildFlow(methodReferences);
         for (AxonNode axonNode : axonNodes) {
             switch (format) {

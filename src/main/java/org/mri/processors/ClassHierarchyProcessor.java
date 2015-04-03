@@ -1,4 +1,4 @@
-package org.mri;
+package org.mri.processors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class ClassHierarchyProcessor extends AbstractProcessor<CtClassImpl> {
         }
     }
 
-    Map<CtTypeReference, java.util.Set<CtTypeReference>> executeSpoon(QueueProcessingManager queueProcessingManager) throws Exception {
+    public Map<CtTypeReference, java.util.Set<CtTypeReference>> executeSpoon(QueueProcessingManager queueProcessingManager) throws Exception {
         queueProcessingManager.addProcessor(this);
         queueProcessingManager.process();
         logger.debug("Class Hierarchy: " + implementors);
