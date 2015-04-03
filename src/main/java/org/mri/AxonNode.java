@@ -1,5 +1,6 @@
 package org.mri;
 
+import com.google.common.collect.Lists;
 import spoon.reflect.reference.CtExecutableReference;
 
 import java.io.PrintStream;
@@ -58,28 +59,50 @@ public class AxonNode {
         }
 
         printStream.println("@startuml " + LOWER_CAMEL.to(LOWER_HYPHEN, reference.getSimpleName()) + "-flow.png");
+        List<AxonNode> all = Lists.newArrayList(this);
+        all.addAll(descendants());
+        for (AxonNode each : all) {
+            printStream.println("participant \"" + prettyActorName(each.reference) + "\" as " + actorName(each.reference));
+        }
+        printStream.println();
         printPlantUMLComponent(printStream);
         printStream.println("@enduml");
+    }
+
+    private List<AxonNode> descendants() {
+        List<AxonNode> all = new ArrayList<>();
+        for (AxonNode child : children) {
+            all.add(child);
+            all.addAll(child.descendants());
+        }
+        return all;
     }
 
     private void printPlantUMLComponent(PrintStream printStream) {
         for (AxonNode child : children) {
             printStream.println(
-                    "\"" + actorName(this.reference()) + "\""
+                    actorName(this.reference())
                             + " "
                             + transition()
                             + " "
-                            + "\"" + actorName(child.reference()) + "\""
+                            + actorName(child.reference())
                             + ": "
                             + methodName(child));
             child.printPlantUMLComponent(printStream);
         }
     }
 
+    private String prettyActorName(CtExecutableReference reference) {
+        return "**" + reference.getDeclaringType().getSimpleName() + "**"
+                        + "\\n//" + reference.getSimpleName() + "//";
+    }
+
     private String actorName(CtExecutableReference reference) {
-        return
-                reference.getDeclaringType().getSimpleName()
-                        + "#" + reference.getSimpleName();
+        String methodName = reference.getSimpleName();
+        if (methodName.equals("<init>")) {
+            methodName = "ctr";
+        }
+        return reference.getDeclaringType().getSimpleName() + "." + methodName;
     }
 
     private String transition() {
