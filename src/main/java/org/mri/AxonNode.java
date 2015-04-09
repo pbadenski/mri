@@ -53,6 +53,26 @@ public class AxonNode {
         }
     }
 
+    public void printDot(PrintStream printStream) {
+        if (children.isEmpty()) {
+            return;
+        }
+
+        printStream.println("digraph G {");
+        printDot(printStream, children);
+        printStream.println("}");
+    }
+
+    private void printDot(PrintStream printStream, List<AxonNode> children) {
+        for (AxonNode child : children) {
+            printStream.println(
+                    "\"" + className(this) + "#" + methodName(this) + "\""
+                            + " -> "
+                            + "\"" + className(child) + "#" + methodName(child) + "\"");
+            child.printDot(printStream, child.children);
+        }
+    }
+
     public void printPlantUML(PrintStream printStream) {
         if (children.isEmpty()) {
             return;
@@ -90,6 +110,10 @@ public class AxonNode {
                             + methodName(child));
             child.printPlantUMLComponent(printStream);
         }
+    }
+
+    private String className(AxonNode node) {
+        return node.reference.getDeclaringType().getSimpleName();
     }
 
     private String prettyActorName(CtExecutableReference reference) {

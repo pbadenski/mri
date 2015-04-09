@@ -24,7 +24,7 @@ import java.util.Set;
 
 public class ShowAxonFlow {
     enum Format {
-        DEFAULT, PLANTUML;
+        DEFAULT, PLANTUML, DOT;
     }
 
     private static Logger logger = LoggerFactory.getLogger(ShowAxonFlow.class);
@@ -132,6 +132,9 @@ public class ShowAxonFlow {
             switch (format) {
                 case PLANTUML:
                     axonNode.printPlantUML(printStream);
+                    break;
+                case DOT:
+                    axonNode.printDot(printStream);
                     break;
                 default:
                     axonNode.print(printStream);
