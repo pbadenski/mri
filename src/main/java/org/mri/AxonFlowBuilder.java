@@ -53,7 +53,6 @@ public class AxonFlowBuilder {
             AxonNode commandHandlerNode = new AxonNode(AxonNode.Type.COMMAND_HANDLER, commandHandler.getReference());
             commandConstructionNode.add(commandHandlerNode);
             buildAggregateFlow(commandHandlerNode);
-            buildEventFlow(commandHandlerNode);
         }
     }
 
