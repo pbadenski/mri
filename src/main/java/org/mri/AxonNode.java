@@ -117,16 +117,11 @@ public class AxonNode {
     }
 
     private String prettyActorName(CtExecutableReference reference) {
-        return "**" + reference.getDeclaringType().getSimpleName() + "**"
-                        + "\\n//" + reference.getSimpleName() + "//";
+        return reference.getDeclaringType().getPackage().getSimpleName() + "\\n" + "**" + reference.getDeclaringType().getSimpleName() + "**";
     }
 
     private String actorName(CtExecutableReference reference) {
-        String methodName = reference.getSimpleName();
-        if (methodName.equals("<init>")) {
-            methodName = "ctr";
-        }
-        return reference.getDeclaringType().getSimpleName() + "." + methodName;
+        return reference.getDeclaringType().getPackage().getSimpleName() + "." + reference.getDeclaringType().getSimpleName();
     }
 
     private String transition() {
