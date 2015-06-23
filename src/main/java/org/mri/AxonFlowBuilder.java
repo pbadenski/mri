@@ -1,6 +1,5 @@
 package org.mri;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import spoon.reflect.reference.CtExecutableReference;
@@ -45,17 +44,17 @@ public class AxonFlowBuilder {
     }
 
     private void buildCommandFlow(AxonNode node) {
-        MethodCall methodCall = this.callHierarchyBuilder.buildCallHierarchy(node.reference());
-        Optional<MethodCall> commandConstruction = Iterables.tryFind(methodCall.asList(), isCommandPredicate());
-        if (!commandConstruction.isPresent()) {
-            return;
+        MethodCall methodCall = this.callHierarchyBuilder.buildCalleesMethodHierarchy(node.reference());
+        Iterable<MethodCall> allCommandConstructionCalls = Iterables.filter(methodCall.asList(), isCommandPredicate());
+        for (MethodCall commandConstruction : allCommandConstructionCalls) {
+            CtMethodImpl commandHandler = commandHandlers.get(commandConstruction.reference().getDeclaringType());
+            AxonNode commandConstructionNode = new AxonNode(AxonNode.Type.COMMAND, commandConstruction.reference());
+            node.add(commandConstructionNode);
+            AxonNode commandHandlerNode = new AxonNode(AxonNode.Type.COMMAND_HANDLER, commandHandler.getReference());
+            commandConstructionNode.add(commandHandlerNode);
+            buildAggregateFlow(commandHandlerNode);
+            buildEventFlow(commandHandlerNode);
         }
-        CtMethodImpl commandHandler = commandHandlers.get(commandConstruction.get().reference().getDeclaringType());
-        AxonNode commandConstructionNode = new AxonNode(AxonNode.Type.COMMAND, commandConstruction.get().reference());
-        node.add(commandConstructionNode);
-        AxonNode commandHandlerNode = new AxonNode(AxonNode.Type.COMMAND_HANDLER, commandHandler.getReference());
-        commandConstructionNode.add(commandHandlerNode);
-        buildAggregateFlow(commandHandlerNode);
     }
 
     private Predicate<MethodCall> isCommandPredicate() {
@@ -68,7 +67,7 @@ public class AxonFlowBuilder {
     }
 
     private void buildAggregateFlow(AxonNode node) {
-        MethodCall methodCall = this.callHierarchyBuilder.buildCallHierarchy(node.reference());
+        MethodCall methodCall = this.callHierarchyBuilder.buildCalleesMethodHierarchy(node.reference());
 
         Iterable<MethodCall> aggregateCallInstances =
                 Iterables.filter(methodCall.asList(), isAggregatePredicate());
@@ -91,7 +90,7 @@ public class AxonFlowBuilder {
     }
 
     private AxonNode buildEventFlow(AxonNode node) {
-        MethodCall methodCall = this.callHierarchyBuilder.buildCallHierarchy(node.reference());
+        MethodCall methodCall = this.callHierarchyBuilder.buildCalleesMethodHierarchy(node.reference());
 
         Iterable<MethodCall> eventConstructionInstances =
                 Iterables.filter(methodCall.asList(), eventHandlerIdentificationStrategy.isEventPredicate());
