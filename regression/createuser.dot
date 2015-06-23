@@ -1,0 +1,14 @@
+digraph G {
+"BaseDBInit#create" -> "CreateUserCommand#create"
+"CreateUserCommand#<init>" -> "UserCommandHandler#handleCreateUser"
+"UserCommandHandler#create" -> "User#create"
+"User#<init>" -> "UserCreatedEvent#<init>"
+"UserCreatedEvent#<init>" -> "PortfolioManagementUserListener#createNewPortfolioWhenUserIsCreated"
+"PortfolioManagementUserListener#create" -> "CreatePortfolioCommand#create"
+"CreatePortfolioCommand#<init>" -> "PortfolioCommandHandler#handleCreatePortfolio"
+"PortfolioCommandHandler#create" -> "Portfolio#create"
+"Portfolio#<init>" -> "PortfolioCreatedEvent#<init>"
+"PortfolioCreatedEvent#<init>" -> "Portfolio#onPortfolioCreated"
+"PortfolioCreatedEvent#<init>" -> "PortfolioMoneyEventListener#handleEvent"
+"UserCreatedEvent#<init>" -> "User#onUserCreated"
+}

@@ -1,0 +1,28 @@
+@startuml createuser-flow.png
+participant "org.axonframework.samples.trader.webui.init\n**BaseDBInit**" as org.axonframework.samples.trader.webui.init.BaseDBInit
+participant "org.axonframework.samples.trader.api.users\n**CreateUserCommand**" as org.axonframework.samples.trader.api.users.CreateUserCommand
+participant "org.axonframework.samples.trader.users.command\n**UserCommandHandler**" as org.axonframework.samples.trader.users.command.UserCommandHandler
+participant "org.axonframework.samples.trader.users.command\n**User**" as org.axonframework.samples.trader.users.command.User
+participant "org.axonframework.samples.trader.api.users\n**UserCreatedEvent**" as org.axonframework.samples.trader.api.users.UserCreatedEvent
+participant "org.axonframework.samples.trader.orders.command\n**PortfolioManagementUserListener**" as org.axonframework.samples.trader.orders.command.PortfolioManagementUserListener
+participant "org.axonframework.samples.trader.api.portfolio\n**CreatePortfolioCommand**" as org.axonframework.samples.trader.api.portfolio.CreatePortfolioCommand
+participant "org.axonframework.samples.trader.orders.command\n**PortfolioCommandHandler**" as org.axonframework.samples.trader.orders.command.PortfolioCommandHandler
+participant "org.axonframework.samples.trader.orders.command\n**Portfolio**" as org.axonframework.samples.trader.orders.command.Portfolio
+participant "org.axonframework.samples.trader.api.portfolio\n**PortfolioCreatedEvent**" as org.axonframework.samples.trader.api.portfolio.PortfolioCreatedEvent
+participant "org.axonframework.samples.trader.orders.command\n**Portfolio**" as org.axonframework.samples.trader.orders.command.Portfolio
+participant "org.axonframework.samples.trader.query.portfolio\n**PortfolioMoneyEventListener**" as org.axonframework.samples.trader.query.portfolio.PortfolioMoneyEventListener
+participant "org.axonframework.samples.trader.users.command\n**User**" as org.axonframework.samples.trader.users.command.User
+
+org.axonframework.samples.trader.webui.init.BaseDBInit -> org.axonframework.samples.trader.api.users.CreateUserCommand: create
+org.axonframework.samples.trader.api.users.CreateUserCommand --> org.axonframework.samples.trader.users.command.UserCommandHandler: handleCreateUser
+org.axonframework.samples.trader.users.command.UserCommandHandler -> org.axonframework.samples.trader.users.command.User: create
+org.axonframework.samples.trader.users.command.User -> org.axonframework.samples.trader.api.users.UserCreatedEvent: <init>
+org.axonframework.samples.trader.api.users.UserCreatedEvent --> org.axonframework.samples.trader.orders.command.PortfolioManagementUserListener: createNewPortfolioWhenUserIsCreated
+org.axonframework.samples.trader.orders.command.PortfolioManagementUserListener -> org.axonframework.samples.trader.api.portfolio.CreatePortfolioCommand: create
+org.axonframework.samples.trader.api.portfolio.CreatePortfolioCommand --> org.axonframework.samples.trader.orders.command.PortfolioCommandHandler: handleCreatePortfolio
+org.axonframework.samples.trader.orders.command.PortfolioCommandHandler -> org.axonframework.samples.trader.orders.command.Portfolio: create
+org.axonframework.samples.trader.orders.command.Portfolio -> org.axonframework.samples.trader.api.portfolio.PortfolioCreatedEvent: <init>
+org.axonframework.samples.trader.api.portfolio.PortfolioCreatedEvent --> org.axonframework.samples.trader.orders.command.Portfolio: onPortfolioCreated
+org.axonframework.samples.trader.api.portfolio.PortfolioCreatedEvent --> org.axonframework.samples.trader.query.portfolio.PortfolioMoneyEventListener: handleEvent
+org.axonframework.samples.trader.api.users.UserCreatedEvent --> org.axonframework.samples.trader.users.command.User: onUserCreated
+@enduml
