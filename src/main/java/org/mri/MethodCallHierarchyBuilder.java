@@ -6,17 +6,17 @@ import spoon.reflect.reference.CtTypeReference;
 import java.util.*;
 
 public class MethodCallHierarchyBuilder {
-    private final Map<CtExecutableReference, List<CtExecutableReference>> callList;
+    private final Map<MethodWrapper, List<CtExecutableReference>> callList;
     private final Map<CtTypeReference, Set<CtTypeReference>> classHierarchy;
 
-    public MethodCallHierarchyBuilder(Map<CtExecutableReference, List<CtExecutableReference>> callList,
+    public MethodCallHierarchyBuilder(Map<MethodWrapper, List<CtExecutableReference>> callList,
                                       Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
         this.callList = callList;
         this.classHierarchy = classHierarchy;
     }
 
     public static ArrayList<CtExecutableReference> forMethodName(String methodName,
-                                                                 Map<CtExecutableReference, List<CtExecutableReference>> callList,
+                                                                 Map<MethodWrapper, List<CtExecutableReference>> callList,
                                                                  Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
         ArrayList<CtExecutableReference > result = new ArrayList<>();
         for (CtExecutableReference executableReference : findExecutablesForMethodName(methodName, callList)) {
@@ -25,9 +25,10 @@ public class MethodCallHierarchyBuilder {
         return result;
     }
 
-    static List<CtExecutableReference> findExecutablesForMethodName(String methodName, Map<CtExecutableReference, List<CtExecutableReference>> callList) {
+    static List<CtExecutableReference> findExecutablesForMethodName(String methodName, Map<MethodWrapper, List<CtExecutableReference>> callList) {
         ArrayList<CtExecutableReference> result = new ArrayList<>();
-        for (CtExecutableReference executableReference : callList.keySet()) {
+        for (MethodWrapper methodWrapper : callList.keySet()) {
+            CtExecutableReference executableReference = methodWrapper.method().getReference();
             String executableReferenceMethodName = ASTHelpers.signatureOf(executableReference);
             if (executableReferenceMethodName.equals(methodName)
                     || executableReference.toString().contains(methodName)
@@ -45,12 +46,12 @@ public class MethodCallHierarchyBuilder {
     }
 
     private void buildCallHierarchy(
-            CtExecutableReference method, Set<CtExecutableReference> alreadyVisited, MethodCall methodCall) {
-        if (alreadyVisited.contains(method)) {
+            CtExecutableReference executableReference, Set<CtExecutableReference> alreadyVisited, MethodCall methodCall) {
+        if (alreadyVisited.contains(executableReference)) {
             return;
         }
-        alreadyVisited.add(method);
-        List<CtExecutableReference> callListForMethod = callList.get(method);
+        alreadyVisited.add(executableReference);
+        List<CtExecutableReference> callListForMethod = callList.get(new MethodWrapper(executableReference));
         if (callListForMethod == null) {
             return;
         }

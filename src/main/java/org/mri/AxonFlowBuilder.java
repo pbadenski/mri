@@ -18,7 +18,7 @@ public class AxonFlowBuilder {
     private List<CtTypeReference> aggregates;
 
     public AxonFlowBuilder(Map<CtTypeReference, Set<CtTypeReference>> classHierarchy,
-                           Map<CtExecutableReference, List<CtExecutableReference>> callList,
+                           Map<MethodWrapper, List<CtExecutableReference>> callList,
                            Map<CtTypeReference, List<CtMethodImpl>> eventHandlers,
                            Map<CtTypeReference, CtMethodImpl> commandHandlers,
                            List<CtTypeReference> aggregates, boolean matchEventsByName) {

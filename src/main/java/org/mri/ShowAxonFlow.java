@@ -12,7 +12,6 @@ import spoon.compiler.ModelBuildingException;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.QueueProcessingManager;
-import spoon.support.compiler.FileSystemFolder;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
 import java.io.File;
@@ -98,7 +97,7 @@ public class ShowAxonFlow {
             launcher.setArgs(new String[] { "--source-classpath", StringUtils.strip(FileUtils.readFileToString(classpathFile), "\n\r\t ")});
         }
         for (String sourceFolder : sourceFolders) {
-            launcher.addInputResource(new FileSystemFolder(new File(sourceFolder)));
+            launcher.addInputResource(sourceFolder);
         }
         try {
             launcher.run();
@@ -113,7 +112,7 @@ public class ShowAxonFlow {
         QueueProcessingManager queueProcessingManager = new QueueProcessingManager(launcher.getFactory());
         Map<CtTypeReference, Set<CtTypeReference>> classHierarchy =
                 new ClassHierarchyBuilder().build(queueProcessingManager);
-        Map<CtExecutableReference, List<CtExecutableReference>> callList =
+        Map<MethodWrapper, List<CtExecutableReference>> callList =
                 new MethodExecutionBuilder().build(queueProcessingManager);
         final Map<CtTypeReference, List<CtMethodImpl>> eventHandlers =
                 new EventHandlersFinder()

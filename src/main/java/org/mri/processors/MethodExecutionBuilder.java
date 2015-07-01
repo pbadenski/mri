@@ -1,5 +1,6 @@
 package org.mri.processors;
 
+import org.mri.MethodWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.processing.AbstractProcessor;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MethodExecutionBuilder {
-    private Map<CtExecutableReference, List<CtExecutableReference>> callList = new HashMap<>();
+    private Map<MethodWrapper, List<CtExecutableReference>> callList = new HashMap<>();
     private static Logger logger = LoggerFactory.getLogger(MethodExecutionBuilder.class);
 
     private class Processor extends AbstractProcessor<CtExecutableImpl> {
@@ -34,12 +35,12 @@ public class MethodExecutionBuilder {
                 calls.add(invocation.getExecutable());
 
             }
-            callList.put(ctMethod.getReference(), calls);
+            callList.put(new MethodWrapper(ctMethod), calls);
         }
 
     }
 
-    public Map<CtExecutableReference, List<CtExecutableReference>> build(QueueProcessingManager queueProcessingManager) throws Exception {
+    public Map<MethodWrapper, List<CtExecutableReference>> build(QueueProcessingManager queueProcessingManager) throws Exception {
         queueProcessingManager.addProcessor(new Processor());
         queueProcessingManager.process();
         logger.debug("Method calls: " + callList);
