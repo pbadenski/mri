@@ -1,3 +1,12 @@
 # 1.0.1
 - Generated Plant UML file can contain many diagrams which can be rendered and
 exported all at once
+
+# 1.0.2
+- Include aggregate calls in the flow
+- Added dot support (co-implemented with @jweissman)
+= Support for controllers dispatching many commands in the flow
+- Add package names in PlantUML flow
+- Add regression tests
+- Remove verbose logging output
+- Upgrade to spoon 4.1.0

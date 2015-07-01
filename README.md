@@ -95,3 +95,9 @@ Run (requires plantuml as shell command):
 Image output:
 
 ![Example Axon flow as Plant UML sequence diagram](example-puml.png)
+
+Contributors
+-------
+
+@pbadenski
+@jweissman
